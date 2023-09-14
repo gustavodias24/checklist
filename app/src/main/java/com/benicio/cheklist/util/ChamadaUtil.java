@@ -1,8 +1,10 @@
-package com.benicio.cheklist;
+package com.benicio.cheklist.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.benicio.cheklist.model.CheckModel;
+import com.benicio.cheklist.model.UsuarioModel;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

@@ -1,4 +1,6 @@
-package com.benicio.cheklist;
+package com.benicio.cheklist.model;
+
+import com.benicio.cheklist.model.CheckModel;
 
 import java.io.Serializable;
 import java.util.ArrayList;

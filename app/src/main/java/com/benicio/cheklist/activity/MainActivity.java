@@ -1,14 +1,20 @@
-package com.benicio.cheklist;
+package com.benicio.cheklist.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.Menu;
 import android.widget.Toast;
 
+import com.benicio.cheklist.util.ChamadaUtil;
+import com.benicio.cheklist.R;
 import com.benicio.cheklist.databinding.ActivityMainBinding;
 import com.benicio.cheklist.databinding.LayoutInserirPinBinding;
+
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
-
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         mainBinding.checkinBtn.setOnClickListener( view -> {
             type = true;
             dialogPin.show();
@@ -33,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
         mainBinding.novoUsuarioBtn.setOnClickListener( view -> {});
 
         dialogPin = criarDialogInserirPin();
+
     }
 
     public Dialog criarDialogInserirPin(){
@@ -41,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
         LayoutInserirPinBinding inserirPinBinding = LayoutInserirPinBinding.inflate(getLayoutInflater());
         
         inserirPinBinding.prontoBtn.setOnClickListener( view -> {
+
+           Objects.requireNonNull(inserirPinBinding.pinField.getEditText()).setError(null);
            String pinString = inserirPinBinding.pinField.getEditText().getText().toString().trim();
            if ( !pinString.isEmpty() ){
                int pin = Integer.parseInt(pinString);
@@ -62,6 +71,10 @@ public class MainActivity extends AppCompatActivity {
         b.setView(inserirPinBinding.getRoot());
         return b.create();
     }
-    
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_planilha, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 }
