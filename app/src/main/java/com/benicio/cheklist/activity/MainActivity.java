@@ -3,25 +3,37 @@ package com.benicio.cheklist.activity;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.Menu;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.benicio.cheklist.databinding.LayoutAdicionarUsuarioBinding;
+import com.benicio.cheklist.model.UsuarioModel;
 import com.benicio.cheklist.util.ChamadaUtil;
 import com.benicio.cheklist.R;
 import com.benicio.cheklist.databinding.ActivityMainBinding;
 import com.benicio.cheklist.databinding.LayoutInserirPinBinding;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mainBinding;
     private Dialog dialogPin;
+    private Dialog dialogAdicionarUsuario;
     private Boolean type = true;
-    
+    private int pinAtribuido = 0;
+    private Random random;
+    private TextView pinText;
+    @SuppressLint("DefaultLocale")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,15 +48,30 @@ public class MainActivity extends AppCompatActivity {
             type = false;
             dialogPin.show();
         });
-        mainBinding.novoUsuarioBtn.setOnClickListener( view -> {});
+        mainBinding.novoUsuarioBtn.setOnClickListener( view -> dialogAdicionarUsuario.show());
 
         dialogPin = criarDialogInserirPin();
+        dialogAdicionarUsuario = criarDialogAdicionarUsuario();
 
+        random = new Random();
+        dialogAdicionarUsuario.setOnShowListener(dialogInterface ->  {
+
+           pinAtribuido = random.nextInt(9000) + 1000;
+
+           while (ChamadaUtil.verificarPin(getApplicationContext(), pinAtribuido) ){
+               pinAtribuido = random.nextInt(9000) + 1000;
+           }
+           
+           pinText.setText(
+                   String.format("O pin atribuído foi: %d", pinAtribuido)
+           );
+        });
     }
 
     public Dialog criarDialogInserirPin(){
         AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
         b.setCancelable(false);
+        b.setNegativeButton("Cancelar", (i,d) -> dialogPin.dismiss());
         LayoutInserirPinBinding inserirPinBinding = LayoutInserirPinBinding.inflate(getLayoutInflater());
         
         inserirPinBinding.prontoBtn.setOnClickListener( view -> {
@@ -59,9 +86,12 @@ public class MainActivity extends AppCompatActivity {
                    dialogPin.dismiss();
                }else{
                    Toast.makeText(this, "Pin inválido!", Toast.LENGTH_SHORT).show();
+                   inserirPinBinding.pinField.setError(
+                           "Pin inválido!"
+                   );
                }
            }else{
-               inserirPinBinding.pinField.getEditText().setError(
+               inserirPinBinding.pinField.setError(
                        "Campo obrigatório"
                );
            }
@@ -69,6 +99,34 @@ public class MainActivity extends AppCompatActivity {
         
         
         b.setView(inserirPinBinding.getRoot());
+        return b.create();
+    }
+
+    public Dialog criarDialogAdicionarUsuario(){
+        AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
+
+        LayoutAdicionarUsuarioBinding usuarioBinding = LayoutAdicionarUsuarioBinding.inflate(getLayoutInflater());
+        pinText = usuarioBinding.pinAtribuidoText;
+
+        usuarioBinding.prontoBtn.setOnClickListener( view -> {
+            String nomeCliente = usuarioBinding.nomeUsuarioField.getEditText().getText().toString();
+            if ( !nomeCliente.isEmpty() ){
+                UsuarioModel usuarioModel = new UsuarioModel();
+                usuarioModel.setNome(nomeCliente);
+                usuarioModel.setPin(pinAtribuido);
+                List<UsuarioModel> listaAtt = ChamadaUtil.loadList(getApplicationContext());
+                listaAtt.add(usuarioModel);
+                ChamadaUtil.saveList(getApplicationContext(), listaAtt);
+                dialogAdicionarUsuario.dismiss();
+                usuarioBinding.nomeUsuarioField.getEditText().setText("");
+                Toast.makeText(this, "Usuário adicionado com sucesso!", Toast.LENGTH_SHORT).show();
+            }else{
+                usuarioBinding.nomeUsuarioField.setError("Campo obrigatório");
+            }
+        });
+
+        b.setView(usuarioBinding.getRoot());
+
         return b.create();
     }
 

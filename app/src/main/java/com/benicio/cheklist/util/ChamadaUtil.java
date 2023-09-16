@@ -23,7 +23,7 @@ public class ChamadaUtil {
         SharedPreferences preferences = c.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String usuarios = preferences.getString(KEY_NAME, "");
 
-        if ( usuarios.isEmpty() ){
+        if ( !usuarios.isEmpty() ){
             Gson gson = new Gson();
             Type type = new TypeToken<List<UsuarioModel>>(){}.getType();
             return gson.fromJson(usuarios, type);
@@ -43,11 +43,14 @@ public class ChamadaUtil {
     }
 
     public static Boolean verificarPin(Context c, int pin){
-        for ( UsuarioModel u : loadList(c)){
-            if ( u.getPin() == pin){
-                return true;
+        if ( loadList(c) != null){
+            for ( UsuarioModel u : loadList(c)){
+                if ( u.getPin() == pin){
+                    return true;
+                }
             }
         }
+
         return false;
     }
     public static void setCheckForUsuario( Boolean type, int pin, Context c){

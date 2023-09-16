@@ -11,6 +11,8 @@ public class UsuarioModel implements Serializable {
     int pin;
     List<CheckModel> chekins=  new ArrayList<>();
 
+
+
     public int getPin() {
         return pin;
     }
