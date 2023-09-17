@@ -1,5 +1,6 @@
 package com.benicio.cheklist.activity;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
@@ -7,8 +8,11 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +22,7 @@ import com.benicio.cheklist.util.ChamadaUtil;
 import com.benicio.cheklist.R;
 import com.benicio.cheklist.databinding.ActivityMainBinding;
 import com.benicio.cheklist.databinding.LayoutInserirPinBinding;
+import com.google.android.material.textfield.TextInputLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +32,7 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding mainBinding;
-    private Dialog dialogPin;
+    private Dialog dialogPin, dialogInfos;
     private Dialog dialogAdicionarUsuario;
     private Boolean type = true;
     private int pinAtribuido = 0;
@@ -40,6 +45,11 @@ public class MainActivity extends AppCompatActivity {
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mainBinding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+
+        mainBinding.infosGeraisText.setOnClickListener( view -> {
+            dialogInfos.show();
+        });
+
         mainBinding.checkinBtn.setOnClickListener( view -> {
             type = true;
             dialogPin.show();
@@ -51,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         mainBinding.novoUsuarioBtn.setOnClickListener( view -> dialogAdicionarUsuario.show());
 
         dialogPin = criarDialogInserirPin();
+        dialogInfos = criarDialogInserirInfos();
         dialogAdicionarUsuario = criarDialogAdicionarUsuario();
 
         random = new Random();
@@ -65,17 +76,47 @@ public class MainActivity extends AppCompatActivity {
            pinText.setText(
                    String.format("O pin atribuído foi: %d", pinAtribuido)
            );
+
         });
     }
+    public Dialog criarDialogInserirInfos(){
+        AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
 
+        LayoutAdicionarUsuarioBinding usuarioBinding = LayoutAdicionarUsuarioBinding.inflate(getLayoutInflater());
+        usuarioBinding.textView.setText("Insira as informações");
+
+        usuarioBinding.nomeUsuarioField.setVisibility(View.GONE);
+        usuarioBinding.editTextTextMultiLine.setVisibility(View.VISIBLE);
+        usuarioBinding.pinAtribuidoText.setVisibility(View.GONE);
+
+
+        usuarioBinding.prontoBtn.setOnClickListener( view -> {
+            String nomeCliente = usuarioBinding.editTextTextMultiLine.getText().toString();
+            if ( !nomeCliente.isEmpty() ){
+               mainBinding.infosGeraisText.setText(nomeCliente);
+               dialogInfos.dismiss();
+            }else{
+                Toast.makeText(this, "Campo não pode ser vazio", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        b.setView(usuarioBinding.getRoot());
+
+        return b.create();
+    }
     public Dialog criarDialogInserirPin(){
         AlertDialog.Builder b = new AlertDialog.Builder(MainActivity.this);
-        b.setCancelable(false);
-        b.setNegativeButton("Cancelar", (i,d) -> dialogPin.dismiss());
-        LayoutInserirPinBinding inserirPinBinding = LayoutInserirPinBinding.inflate(getLayoutInflater());
-        
-        inserirPinBinding.prontoBtn.setOnClickListener( view -> {
 
+        b.setCancelable(false);
+        LayoutInserirPinBinding inserirPinBinding = LayoutInserirPinBinding.inflate(getLayoutInflater());
+        b.setPositiveButton("Cancelar", (dialogInterface, i) -> {
+
+            dialogPin.dismiss();
+            inserirPinBinding.pinField.getEditText().setText("");
+            inserirPinBinding.pinField.setError(null);
+
+        });
+        inserirPinBinding.prontoBtn.setOnClickListener( view -> {
            Objects.requireNonNull(inserirPinBinding.pinField.getEditText()).setError(null);
            String pinString = inserirPinBinding.pinField.getEditText().getText().toString().trim();
            if ( !pinString.isEmpty() ){
@@ -83,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
                if ( ChamadaUtil.verificarPin(getApplicationContext(), pin) ) {
                    ChamadaUtil.setCheckForUsuario(type, pin, getApplicationContext());
                    Toast.makeText(this, "feito!", Toast.LENGTH_SHORT).show();
+                   inserirPinBinding.pinField.getEditText().setText("");
+                   Objects.requireNonNull(inserirPinBinding.pinField.getEditText()).setError(null);
                    dialogPin.dismiss();
                }else{
                    Toast.makeText(this, "Pin inválido!", Toast.LENGTH_SHORT).show();
@@ -134,5 +177,13 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_planilha, menu);
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if ( item.getItemId() == R.id.listagem){
+            startActivity(new Intent(getApplicationContext(), ListagemActivity.class));
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -15,6 +15,15 @@
         android:orientation="vertical"
         tools:context=".activity.MainActivity">
 
+        <TextView
+            android:id="@+id/infos_gerais_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="13dp"
+            android:text="Clique aqui para colocar tema do treinamento, data e nome de quem vai aplicar."
+            android:textColor="#000000" />
+
         <Button
             android:id="@+id/checkin_btn"
             android:layout_width="match_parent"
